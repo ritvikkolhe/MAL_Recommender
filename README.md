@@ -85,9 +85,9 @@ Generate CSV + HTML Report
 Clone the repository:
 
 ```bash
-git clone https://github.com/<your-username>/mal-recommendation-analyzer.git
+git clone https://github.com/<username>/MAL_Recommender.git
 
-cd mal-recommendation-analyzer
+cd MAL_Recommender
 ```
 
 Install dependencies:
