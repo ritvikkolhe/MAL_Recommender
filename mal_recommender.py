@@ -353,57 +353,49 @@ def clean_float(text):
 
 def get_my_list():
     """
-    Download the user's anime list using MAL's
-    load.json endpoint.
+    Download the latest version of the user's
+    anime list using MAL's load.json endpoint.
 
-    Uses local caching to reduce requests.
-
+    The list is refreshed on every run to ensure
+    recommendations reflect the current MAL profile.
+    
     Exports the full list to:
         output/my_list.csv
     """
 
     cache_file = f"{CACHE_DIR}/my_list_{USERNAME}.json"
 
-    if cache_is_valid(cache_file):
+    print("\nDownloading MyAnimeList data...")
 
-        print(f"Using cached {Path(cache_file).name}")
+    anime_data = []
+    offset = 0
 
-        with open(cache_file, "r", encoding="utf-8") as f:
-            anime_data = json.load(f)
+    while True:
 
-    else:
+        url = f"https://myanimelist.net/animelist/{USERNAME}/load.json"
 
-        print("\nDownloading MyAnimeList data...")
+        response = requests.get(
+            url,
+            params={"status": 7, "offset": offset},
+            headers=HEADERS,
+            timeout=30,
+        )
 
-        anime_data = []
-        offset = 0
+        response.raise_for_status()
 
-        while True:
+        data = response.json()
 
-            url = f"https://myanimelist.net/animelist/{USERNAME}/load.json"
+        if not data:
+            break
 
-            response = requests.get(
-                url,
-                params={"status": 7, "offset": offset},
-                headers=HEADERS,
-                timeout=30,
-            )
+        anime_data.extend(data)
 
-            response.raise_for_status()
+        print(f"Fetched records " f"(Total: {len(anime_data)})")
 
-            data = response.json()
+        offset += len(data)
 
-            if not data:
-                break
-
-            anime_data.extend(data)
-
-            print(f"Fetched records " f"(Total: {len(anime_data)})")
-
-            offset += len(data)
-
-        with open(cache_file, "w", encoding="utf-8") as f:
-            json.dump(anime_data, f, indent=2)
+    with open(cache_file, "w", encoding="utf-8") as f:
+        json.dump(anime_data, f, indent=2)
 
     rows = []
 
